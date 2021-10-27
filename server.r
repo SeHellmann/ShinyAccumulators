@@ -1,8 +1,8 @@
 # paramNames <- c("z", "sz", "a", "v", "sv", "tau",
 #                 "delta_t", "input$n_sim", "max_rt")
-input <- list(z=0.5, sz=0, sv=0.1, v=0.5, a=1.5, delta_t=0.05, max_rt=10, n_sim=100, 
-              tau=1, s=1)
-function(input, output, session) {
+# input <- list(z=0.5, sz=0, sv=0.1, v=0.5, a=1.5, delta_t=0.05, max_rt=10, n_sim=100, 
+#               tau=1, s=1)
+server <- function(input, output, session) {
 
   simulate_paths <- reactive({
       list2env(input, envir = environment())
@@ -125,7 +125,7 @@ function(input, output, session) {
     par(mar = c(2, 0.1, 2, 0.1))
     paths <- matplot(x=input$delta_t*(0:(ncol(Xconf1)-1)),t(Xconf1),
                      type = 'l', lwd = 0.5, lty = 1, col =  rgb(red = 0.5, green = 0.1, blue = 0, alpha = 500/input$n_sim*0.1),
-                     ylab = '', ylim=c(-input$a,2*input$a), yaxt="n", xlim=c(0, tau),xlab = '', 
+                     ylab = '', ylim=c(-input$a,2*input$a), yaxt="n", xlim=c(0, input$tau),xlab = '', 
                      main = 'Postdecisional Accumulation', xaxs="i", yaxs="i", xaxt="n",cex.main=1.5,  cex.axis=1.5, cex.lab=1.5)
     matlines(x=input$delta_t*(0:(ncol(Xconf2)-1)),t(Xconf2),
             type = 'l', lwd = 0.5, lty = 1, col =  rgb(red = 0.1, green = 0.1, blue = 0.5, alpha = 500/input$n_sim*0.1))

@@ -1,4 +1,4 @@
-fluidPage(
+ui <- fluidPage(
   titlePanel("Visual Simulation of Sequential Sampling Models"),
   fluidRow(
     column(3,
