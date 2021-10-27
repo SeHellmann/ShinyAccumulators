@@ -8,7 +8,7 @@ In R or RStudio, run
 ```
 install.packages("shiny")
 library(shiny)
-runGitHub("https://github.com/SeHellmann/ShinyAccumulators")
+runGitHub(repo="SeHellmann/ShinyAccumulators")
 ```
 
 ### Literature
