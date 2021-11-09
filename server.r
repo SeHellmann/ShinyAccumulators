@@ -165,10 +165,14 @@ server <- function(input, output, session) {
     
     abline(h=confdescr, col=c(rgb(red = 0.5, green = 0.1, blue = 0),rgb(red = 0.1, green = 0.1, blue = 0.5)),
            lwd=2)
-    
-    text(max(dconf1$y, dconf2$y)*1.01, confdescr+input$a*0.1,
+    lines(y=c(confdescr[1]+sd(conf1),confdescr[1]-sd(conf1)),x=c(0,0), type="l", lwd=8, col= rgb(red = 0.5, green = 0.1, blue = 0, alpha=0.5))
+    lines(y=c(confdescr[2]+sd(conf2),confdescr[2]-sd(conf2)),x=c(0,0), type="l", lwd=8, col= rgb(red = 0.1, green = 0.1, blue = 0.5, alpha=0.5))
+    text(max(dconf1$y, dconf2$y)*0.01, confdescr+input$a*0.1,
          paste("Mean", c("upper","lower"), "confidence:", round(c(1, -1)*confdescr-c(input$a, 0),2)),
-         adj=1, cex=1.5)
+         adj=c(0,0), cex=1.5)
+    text(max(dconf1$y, dconf2$y)*0.01, confdescr-input$a*0.1,
+         paste("SD", c("upper","lower"), "confidence:", round(c(sd(conf1), sd(conf2)),2)),
+         adj=c(0,1), cex=1.5)
   })
 }
 
