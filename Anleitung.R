@@ -1,0 +1,7 @@
+install.packages("shiny")
+install.packages("dplyr")
+install.packages("tidyr")
+library(shiny)
+library(dplyr)
+library(tidyr)
+runGitHub("SeHellmann/shinyaccumulators")

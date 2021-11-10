@@ -1,0 +1,24 @@
+h2 {
+  font-size: 14px;
+  font-weight: bold;
+  font-family: Times;
+}
+
+body {
+  font-family: Times;
+  margin-left: 5px;
+  font-size: 10px;
+}
+.irs-min {
+  font-size: 7px!important;  
+}
+.irs-max {
+  font-size: 7px!important;  
+}
+.irs-single {
+  font-size: 7px!important;  
+}
+
+.irs-grid-text {
+  font-size: 7px;  
+}

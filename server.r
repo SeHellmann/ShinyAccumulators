@@ -11,11 +11,11 @@ server <- function(input, output, session) {
     if ("sz" %in% names(input)) {
       print("sz is in input")
       set.seed(ceiling(input$z*input$n_sim*input$delta_t*as.numeric(input$a)*input$v*input$tau*
-                         input$max_rt*input$sv*input$s)*ceiling(5*as.numeric(Sys.time()-1635331880)+input$recalc))
+                         input$max_rt*input$sv*input$s)*ceiling(5*as.numeric(Sys.time()-1635331880)+if_else(is.null(input$recalc), 1, 2)))
       sz <- input$sz
     } else {
       set.seed(ceiling(input$z*input$n_sim*input$delta_t*as.numeric(input$a)*input$v*input$tau*
-                         input$max_rt*input$sv*input$s)*ceiling(5*as.numeric(Sys.time()-1635331880)+input$recalc))
+                         input$max_rt*input$sv*input$s)*ceiling(5*as.numeric(Sys.time()-1635331880)+if_else(is.null(input$recalc), 1, 2)))
       sz <- 0
     }
     trial_parameters = data.frame(N= 1:input$n_sim,

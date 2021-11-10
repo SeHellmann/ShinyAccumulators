@@ -1,5 +1,8 @@
-ui <- fluidPage(
-  titlePanel("Visual Simulation of Sequential Sampling Models"),
+ui <- fixedPage(
+  #header=tags$head(tags$style(type='text/css', ".irs-grid-text { font-size: 8pt; }")),
+  includeCSS("www/style.css"),
+  titlePanel("Visual Simulation of Sequential Sampling Models",
+             windowTitle = "Visual Simulation of Sequential Sampling Models"),
   fluidRow(
     column(3,
            sliderInput("z", "Mean starting poins (z):", min = 0, max = 1, value = 0.5, step = 0.05, width=NULL),
