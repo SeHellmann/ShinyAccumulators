@@ -11,7 +11,8 @@ ui <- fixedPage(
     ),
     column(3,
            sliderInput("sv", "Standard deviation of drift rates (sv):", min = 0, max = 3, value = 0.5, step =0.05, width=NULL),
-           sliderInput("s", "Diffusion variation (s):", min = 0.1, max = 3, value = 1, step = 0.1, width=NULL)
+           sliderInput("s", "Diffusion variation (s):", min = 0.1, max = 3, value = 1, step = 0.1, width=NULL),
+           sliderInput("tau", "Inter rating interval (tau):", min = 0.1, max = 5.0, value = 1.0, step = 0.1, width=NULL)
     ),
     column(3,
            sliderInput("plot_maxt", "X-Achsen-Grenze (im linken Plot):", min = 3, max = 15, value = 5, step = 1, width=NULL),

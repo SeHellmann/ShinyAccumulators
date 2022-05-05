@@ -10,11 +10,11 @@ server <- function(input, output, session) {
     require(tidyr)
     if ("sz" %in% names(input)) {
       print("sz is in input")
-      set.seed(ceiling(input$z*input$n_sim*input$delta_t*as.numeric(input$a)*input$v*#input$tau*
+      set.seed(ceiling(input$z*input$n_sim*input$delta_t*as.numeric(input$a)*input$v*input$tau*
                          input$max_rt*input$sv*input$s)*ceiling((as.integer(Sys.time()) %% 60)+if_else(is.null(input$recalc), 1, 2)))
       sz <- input$sz
     } else {
-      set.seed(ceiling(input$z*input$n_sim*input$delta_t*as.numeric(input$a)*input$v*#input$tau*
+      set.seed(ceiling(input$z*input$n_sim*input$delta_t*as.numeric(input$a)*input$v*input$tau*
                          input$max_rt*input$sv*input$s)*ceiling((as.integer(Sys.time()) %% 60)+if_else(is.null(input$recalc), 1, 2)))
       sz <- 0
     }
@@ -27,7 +27,10 @@ server <- function(input, output, session) {
                         N = 1:input$n_sim,
                         X=NA)
     Xout <- left_join(Xout, trial_parameters)
-    
+    Xconfout <- expand.grid(t=input$delta_t*(0:ceiling(input$tau/input$delta_t)),
+                            N = 1:input$n_sim,
+                            Xconf = NA)
+    Xconfout <- left_join(Xconfout, trial_parameters)
     respout= expand.grid(N=1:input$n_sim,
                          resp = NA,
                          rt = NA)
@@ -42,8 +45,14 @@ server <- function(input, output, session) {
     
     Xout <- Xout %>% filter(t <= as.numeric(respout[respout$N==cur_group_id(), c("rt")])) %>%
       rowwise() %>% mutate(S=min(max(S,0),as.numeric(input$a)))
-     
-    sim <- list(X=Xout, resp=respout)
+    
+    Xconfout <- Xconfout %>%
+      left_join(respout) %>%
+      group_by(N) %>%
+      mutate(Xconf = c(0,rnorm(n()-1, mu*input$delta_t, sqrt(input$delta_t)*input$s)),
+             Sconf = cumsum(Xconf)+if_else(resp==1, as.numeric(input$a), 0))
+    
+    sim <- list(X=Xout, Xconf = Xconfout, resp=respout)
   })
   
   # gen_plot <- reactive({
@@ -54,7 +63,7 @@ server <- function(input, output, session) {
     input$recalc
     sim <- simulate_paths()
     {  
-      layout(matrix(c(2,1,3), 3,1))
+      layout(matrix(c(2,1,3, 4, 4, 4, 5, 5, 5), 3,3))
       if ("plot_maxt" %in% names(input)) {
         maxrt <- min(input$plot_maxt, input$max_rt)
       } else {
@@ -69,16 +78,16 @@ server <- function(input, output, session) {
       }
       # plot paths
       par(mar = c(0.1, 5, 0.1, 1))
-      paths <- matplot(x=input$delta_t*(1:ncol(X)),(t(X)-input$a/2),
+      paths <- matplot(x=input$delta_t*(1:ncol(X)),t(X),
                        type = 'l', lwd = 0.5, lty = 1, col =  rgb(red = 0, green = 0, blue = 0, alpha = 500/input$n_sim*0.1),
-                       ylab = 'Evidence', ylim=c(-2.5, 2.5), yaxt="n", xlim=c(0, maxrt),xlab = '', 
+                       ylab = 'Evidence', ylim=c(0, input$a), yaxt="n", xlim=c(0, maxrt),xlab = '', 
                        main = '', xaxs="i", yaxs="i", xaxt="n",cex.main=1.5,  cex.axis=1.5, cex.lab=1.5)
       if (sz > 0) {
         axis(side=2, at = (c(0,(as.numeric(input$z)-as.numeric(sz)/2), 
                              as.numeric(input$z), as.numeric(input$z)+as.numeric(sz)/2,1)*as.numeric(input$a)), 
              labels = c(0, "z-sz/2", "z", "z+sz/2","a"), cex=1.5, cex.axis=1.5, cex.lab=1.5)
       } else {
-        axis(side=2, at = (c(-0.5, -0.5+input$z,0.5)*as.numeric(input$a)), labels = c(0, "z", "a"), 
+        axis(side=2, at = (c(0, input$z,1)*as.numeric(input$a)), labels = c(0, "z", "a"), 
              cex=1.5, cex.axis=1.5, cex.lab=1.5)
       }
       
@@ -122,7 +131,48 @@ server <- function(input, output, session) {
              paste("Mean decision time:", round(descr[2, "MRT"], 2)),
              adj=0, cex=1.5)
       }
-    }
+      
+      
+      Xconf1 <- as.matrix(pivot_wider(filter(sim$Xconf, resp==1),values_from=Sconf, names_from=t, id_cols = N))[,-1]
+      Xconf2 <- as.matrix(pivot_wider(filter(sim$Xconf, resp==-1),values_from=Sconf, names_from=t, id_cols = N))[,-1]
+      
+      # plot paths
+      par(mar = c(2, 0.1, 2, 0.1))
+      paths <- matplot(x=input$delta_t*(0:(ncol(Xconf1)-1)),t(Xconf1),
+                       type = 'l', lwd = 0.5, lty = 1, col =  rgb(red = 0.5, green = 0.1, blue = 0, alpha = 500/input$n_sim*0.1),
+                       ylab = '', ylim=c(-input$a,2*input$a), yaxt="n", xlim=c(0, input$tau),xlab = '', 
+                       main = 'Postdecisional Accumulation', xaxs="i", yaxs="i", xaxt="n",cex.main=1.5,  cex.axis=1.5, cex.lab=1.5)
+      matlines(x=input$delta_t*(0:(ncol(Xconf2)-1)),t(Xconf2),
+               type = 'l', lwd = 0.5, lty = 1, col =  rgb(red = 0.1, green = 0.1, blue = 0.5, alpha = 500/input$n_sim*0.1))
+      
+      axis(side=2, at = (c(0, 1)*as.numeric(input$a)), labels = c("", ""), cex=1.5)
+      
+      
+      conf1 <- Xconf1[,ncol(Xconf1)]
+      conf2 <- Xconf2[,ncol(Xconf2)]
+      confdescr <- c(mean(conf1), mean(conf2))
+      dconf1 <- density(conf1)
+      dconf2 <- density(conf2)
+    }   
+    par(mar = c(2, 0.1, 2, 0.1))
+    #d1$y <- d1$y/max(d1$y)
+    plot(x=dconf1$y, y=dconf1$x, type="l", lwd=1.5,
+         main="Confidence distributions", ylim=c(-input$a,2*input$a), xlim=c(0, max(dconf1$y, dconf2$y)*1.02),
+         xaxt="n",xaxs="i", yaxs="i", axes=FALSE,yaxt = "n", 
+         col= rgb(red = 0.5, green = 0.1, blue = 0), cex=1.5,cex.main=1.5,  cex.axis=1.5, cex.lab=1.5)#
+    lines(x=dconf2$y, y=dconf2$x, type="l", lwd=1.5,
+          col= rgb(red = 0.1, green = 0.1, blue = 0.5))#  
+    
+    abline(h=confdescr, col=c(rgb(red = 0.5, green = 0.1, blue = 0),rgb(red = 0.1, green = 0.1, blue = 0.5)),
+           lwd=2)
+    lines(y=c(confdescr[1]+sd(conf1),confdescr[1]-sd(conf1)),x=c(0,0), type="l", lwd=8, col= rgb(red = 0.5, green = 0.1, blue = 0, alpha=0.5))
+    lines(y=c(confdescr[2]+sd(conf2),confdescr[2]-sd(conf2)),x=c(0,0), type="l", lwd=8, col= rgb(red = 0.1, green = 0.1, blue = 0.5, alpha=0.5))
+    text(max(dconf1$y, dconf2$y)*0.01, confdescr+input$a*0.1,
+         paste("Mean", c("upper","lower"), "confidence:", round(c(1, -1)*confdescr-c(input$a, 0),2)),
+         adj=c(0,0), cex=1.5)
+    text(max(dconf1$y, dconf2$y)*0.01, confdescr-input$a*0.1,
+         paste("SD", c("upper","lower"), "confidence:", round(c(sd(conf1), sd(conf2)),2)),
+         adj=c(0,1), cex=1.5)
   })
 }
 
