@@ -1,6 +1,6 @@
 # paramNames <- c("z", "sz", "a", "v", "sv", "tau",
 #                 "delta_t", "input$n_sim", "max_rt")
-# input <- list(z=0.5, sz=0, sv=0.1, v=0.5, a=1.5, delta_t=0.05, max_rt=10, n_sim=100, 
+# input <- list(z=0.5, sz=0, sv=0.1, v=0.5, a=1.5, delta_t=0.05, max_rt=10, n_sim=100,
 #               tau=1, s=1)
 server <- function(input, output, session) {
   
@@ -69,10 +69,14 @@ server <- function(input, output, session) {
       }
       # plot paths
       par(mar = c(0.1, 5, 0.1, 1))
-      paths <- matplot(x=input$delta_t*(1:ncol(X)),(t(X)-input$a/2),
+      paths <- matplot(x=input$delta_t*(0:(ncol(X)-1)),(t(X)-input$a/2),
                        type = 'l', lwd = 0.5, lty = 1, col =  rgb(red = 0, green = 0, blue = 0, alpha = 500/input$n_sim*0.1),
                        ylab = 'Evidence', ylim=c(-2.5, 2.5), yaxt="n", xlim=c(0, maxrt),xlab = '', 
                        main = '', xaxs="i", yaxs="i", xaxt="n",cex.main=1.5,  cex.axis=1.5, cex.lab=1.5)
+      arrows(0, (t(X)[1,1]-input$a/2), 0.4, (t(X)[1,1]-input$a/2)+input$v*0.4, 
+             col="red", lwd=par("lwd")*3, length=0.1)
+      text(0.45, (t(X)[1,1]-input$a/2)+input$v*0.4,expression(nu), 
+           col="red", cex=1.5, font=2)
       if (sz > 0) {
         axis(side=2, at = (c(0,(as.numeric(input$z)-as.numeric(sz)/2), 
                              as.numeric(input$z), as.numeric(input$z)+as.numeric(sz)/2,1)*as.numeric(input$a)), 
@@ -91,7 +95,7 @@ server <- function(input, output, session) {
       resp_1 <- filter(sim$resp, resp==1)
       if (nrow(resp_1>0)) {
         par(mar = c(0.1, 5, 4, 1))
-        d1 <- density(resp_1$rt)
+        d1 <- density(resp_1$rt, bw="SJ")
         d1$y <- d1$y/max(d1$y)*as.numeric(descr[1, "prob"])
         #d1$y <- d1$y/max(d1$y)
         plot(d1, main="Decision (drift diffusion process)", ylim=c(0,1), xlim=c(0, maxrt),
@@ -108,7 +112,7 @@ server <- function(input, output, session) {
       resp_2 <- filter(sim$resp, resp==-1)
       if (nrow(resp_2>0)) {
         par(mar = c(4, 5, 0.1, 1))
-        d2 <- density(resp_2$rt)
+        d2 <- density(resp_2$rt, bw="SJ")
         #d2$y <- d2$y/max(d2$y)
         d2$y <- d2$y/max(d2$y)*as.numeric(descr[2, "prob"])
         d2$y <- 1-d2$y

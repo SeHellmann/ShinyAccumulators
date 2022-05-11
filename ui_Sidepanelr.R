@@ -28,6 +28,6 @@ pageWithSidebar(
   # )
   
   mainPanel(width=6, 
-            plotOutput(outputId = "pathsplot", height="600px")
+            plotOutput(outputId = "pathsplot", height="800px")
   )
 )
