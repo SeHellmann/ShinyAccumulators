@@ -2,6 +2,9 @@
 #                 "delta_t", "input$n_sim", "max_rt")
 # input <- list(z=0.5, sz=0, sv=0.1, v=0.5, a=1.5, delta_t=0.05, max_rt=10, n_sim=100, 
 #               tau=1, s=1)
+# input <- list(z=0.5, sv=0.5, v=1, a=2, delta_t=0.1, max_rt=5, n_sim=500,
+#               tau=1, s=1)
+# 
 server <- function(input, output, session) {
   
   simulate_paths <- reactive({
@@ -11,11 +14,11 @@ server <- function(input, output, session) {
     if ("sz" %in% names(input)) {
       print("sz is in input")
       set.seed(ceiling(input$z*input$n_sim*input$delta_t*as.numeric(input$a)*input$v*input$tau*
-                         input$max_rt*input$sv*input$s)*ceiling(5*as.numeric(Sys.time()-1635331880)+if_else(is.null(input$recalc), 1, 2)))
+                         input$max_rt*input$sv*input$s)*ceiling(abs(as.numeric(Sys.time())-round(as.numeric(Sys.time()), -2))+if_else(is.null(input$recalc), 1, 2)))
       sz <- input$sz
     } else {
       set.seed(ceiling(input$z*input$n_sim*input$delta_t*as.numeric(input$a)*input$v*input$tau*
-                         input$max_rt*input$sv*input$s)*ceiling(5*as.numeric(Sys.time()-1635331880)+if_else(is.null(input$recalc), 1, 2)))
+                         input$max_rt*input$sv*input$s)*ceiling(abs(as.numeric(Sys.time())-round(as.numeric(Sys.time()), -2))+if_else(is.null(input$recalc), 1, 2)))
       sz <- 0
     }
     trial_parameters = data.frame(N= 1:input$n_sim,
