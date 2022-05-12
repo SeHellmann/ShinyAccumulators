@@ -7,6 +7,7 @@ This repository contains a shiny app that simulates observations of the 2DSD mod
 In R or RStudio, run
 ```
 install.packages("shiny")
+install.packages(c("dplyr", "tidyr")) # this is used for simulations
 library(shiny)
 runGitHub(repo="SeHellmann/ShinyAccumulators")
 ```
@@ -14,6 +15,7 @@ For the version that simulates the DDM, only, use the additional argument `ref` 
 
 ```
 install.packages("shiny")
+install.packages(c("dplyr", "tidyr")) # this is used for simulations
 library(shiny)
 runGitHub(repo="SeHellmann/ShinyAccumulators", ref="OnlyDDM")
 ```
