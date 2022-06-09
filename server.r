@@ -67,6 +67,12 @@ server <- function(input, output, session) {
     sim <- simulate_paths()
     {  
       layout(matrix(c(2,1,3, 4, 4, 4, 5, 5, 5), 3,3))
+      descr <- sim$resp %>% group_by(resp) %>%
+        summarise(MRT = mean(rt), 
+                  prob= n()/input$n_sim) %>%
+        full_join(expand.grid(resp=c(-1, 1))) %>%
+        mutate(prob =if_else(is.na(prob), 0, prob)) %>% 
+        ungroup() %>% arrange(desc(resp))
       if ("plot_maxt" %in% names(input)) {
         maxrt <- min(input$plot_maxt, input$max_rt)
       } else {
@@ -82,9 +88,13 @@ server <- function(input, output, session) {
       # plot paths
       par(mar = c(0.1, 5, 0.1, 1))
       paths <- matplot(x=input$delta_t*(1:ncol(X)),t(X),
-                       type = 'l', lwd = 0.5, lty = 1, col =  rgb(red = 0, green = 0, blue = 0, alpha = 500/input$n_sim*0.1),
+                       type = 'l', lwd = 0.5, lty = 1, col =  rgb(red = 0, green = 0, blue = 0, alpha = min(1, 500/input$n_sim*0.1)),
                        ylab = 'Evidence', ylim=c(0, input$a), yaxt="n", xlim=c(0, maxrt),xlab = '', 
                        main = '', xaxs="i", yaxs="i", xaxt="n",cex.main=1.5,  cex.axis=1.5, cex.lab=1.5)
+      text(maxrt-0.02, as.numeric(input$z)*as.numeric(input$a),
+           paste("Not finished:", round(1-descr[1, "prob"]-descr[2, "prob"],2)),
+           adj=1, cex=1.5) 
+      
       if (sz > 0) {
         axis(side=2, at = (c(0,(as.numeric(input$z)-as.numeric(sz)/2), 
                              as.numeric(input$z), as.numeric(input$z)+as.numeric(sz)/2,1)*as.numeric(input$a)), 
@@ -94,12 +104,7 @@ server <- function(input, output, session) {
              cex=1.5, cex.axis=1.5, cex.lab=1.5)
       }
       
-      descr <- sim$resp %>% group_by(resp) %>%
-        summarise(MRT = mean(rt), 
-                  prob= n()/input$n_sim) %>%
-        full_join(expand.grid(resp=c(-1, 1))) %>%
-        mutate(prob =if_else(is.na(prob), 0, prob)) %>% 
-        ungroup() %>% arrange(desc(resp))
+      
       resp_1 <- filter(sim$resp, resp==1)
       if (nrow(resp_1>0)) {
         par(mar = c(0.1, 5, 4, 1))
