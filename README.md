@@ -1,7 +1,7 @@
-README: Shiny Application for Visualizing Sequential Sampling Confidence Models
+README: Shiny Application for simulating the weighted evidence and visibility model (WEV)
 ====
 
-This repository contains a shiny app that simulates observations of the 2DSD model (Pleskac & Busemeyer, 2010) for various parameter sets. In addition, the branch "OnlyDDM" contains a version, in which only the basic DDM is simulated without any post-decisional accumulation. 
+This branch contains a shiny app that simulates observations of the WEV model (Rausch et al., 2019) for various parameter sets.  
 
 ### Usage:
 In R or RStudio, run
@@ -9,22 +9,10 @@ In R or RStudio, run
 install.packages("shiny")
 install.packages(c("dplyr", "tidyr")) # this is used for simulations
 library(shiny)
-runGitHub(repo="SeHellmann/ShinyAccumulators")
-```
-For the version that simulates the DDM, only, use the additional argument `ref` to refer to the respective branch of the repository.
-
-```
-install.packages("shiny")
-install.packages(c("dplyr", "tidyr")) # this is used for simulations
-library(shiny)
-runGitHub(repo="SeHellmann/ShinyAccumulators", ref="OnlyDDM")
+runGitHub(repo="SeHellmann/ShinyAccumulators", ref="WEVmodel")
 ```
 
 
 ### Literature
 
-Pleskac, T. J., & Busemeyer. (2010). Two-stage dynamic signal
-detection: A theory of choice, decision time, and
-confidence. Psychological review, 117(3). https://doi.org/10.1037/a0019737
-
-Ratcliff, R. (1978). A theory of memory retrieval. Psychological Review, 85(2), 59–108. https://doi.org/10.1037/0033-295X.85.2.59
+Rausch, M., Hellmann, S., & Zehetleitner, M. (2018). Confidence in masked orientation discrimination decisions is informed by both evidence and visibility. Attention, Perception, & Psychophysics, 80, 134-155. https://doi.org/10.3758/s13414-017-1431-5

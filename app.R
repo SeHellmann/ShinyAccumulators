@@ -5,5 +5,5 @@ library(dplyr)
 
 source("ui.r")
 source("server.r")
-Interactive2DSD <- shinyApp(ui, server) 
-runApp(Interactive2DSD)
+InteractiveWEV <- shinyApp(ui, server) 
+runApp(InteractiveWEV)

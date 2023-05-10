@@ -1,7 +1,12 @@
 install.packages("shiny")
 install.packages("dplyr")
 install.packages("tidyr")
+install.packages("ggplot2")
+install.packages("ggpubr")
+
 library(shiny)
 library(dplyr)
 library(tidyr)
-runGitHub("SeHellmann/shinyaccumulators")
+library(ggplot2)
+library(ggpubr)
+runGitHub("SeHellmann/shinyaccumulators", ref="WEVmodel")
