@@ -1,144 +1,129 @@
-# paramNames <- c("z", "sz", "a", "v", "sv", "tau",
-#                 "delta_t", "input$n_sim", "max_rt")
-require(dplyr)
-require(tidyr)
-require(ggplot2)
-library(ggpubr)
 
-input <- list(c = 0.05, sd=1, sv=1, w=0.5, n_sim= 100, 
-              manipulation1 = c(0, 1, 2, 3),manipulation2 = c(1, 3),
-              Einfluss_man1_d = 2, Einfluss_man1_v=0.5, 
-              Einfluss_man2_d=1, Einfluss_man2_v=1,
-              name_man1 = "Orientierung", name_man2="Kontrast"
-              )
-              # man1 = "d, v", funcs1 = "x, abs(x)", steps1 = "1,2,3,4",
-              # man1 = "w", funcs1 = "x", steps1 = "0.2, 0.8")
-              
+# input <- list(c = 0.05, sd=1, sv=1, w=0.5, n_sim= 100, 
+#               manipulation1 = "0, 1, 2, 3",manipulation2 = "1, 3",
+#               Einfluss_man1_d = 2, Einfluss_man1_v=0.5, 
+#               Einfluss_man2_d=1, Einfluss_man2_v=1,
+#               name_man1 = "Orientierung", name_man2="Kontrast"
+#               )
 
-list2env(input, envir = environment())
-conditions <- expand.grid(man1 = manipulation1, man2=manipulation2)
-
-conditions$d  <- conditions$man1*Einfluss_man1_d + 
-  conditions$man2*Einfluss_man2_d
-conditions$v  <- conditions$man1*Einfluss_man1_v + 
-  conditions$man2*Einfluss_man2_v
-conditions$sd <- input$sd
-conditions$sv <- input$sv
-conditions$w <- input$w
-
-
-stim <- rep(c(-1, 1), each=input$n_sim)
-
-
-sim <- conditions %>% group_by(man1, man2) %>%
-  reframe(X = rnorm(2*input$n_sim, mean=c(rep(c(d/2,-d/2), each=n_sim)), input$sd),
-          V = rnorm(2*input$n_sim, v, input$sv),
-          stim = rep(c(1, -1), each=n_sim)) %>% 
-  mutate(resp = (-1)^(X < input$c),
-         correct = as.numeric(resp==stim),
-         conf = (1-input$w)*abs(X-input$c) + input$w *V)
-ggplot(sim, aes(x=X, linetype=as.factor(man2), color=as.factor(man1),
-                group=interaction(stim, man1, man2)))+
-  scale_color_discrete(name=input$name_man1)+
-  scale_linetype_discrete(name=input$name_man2)+
-  geom_density()
-p_d_man1 <- ggplot(sim, aes(x=X, linetype=as.factor(stim), color=as.factor(man1)))+
-  scale_color_discrete(name=input$name_man1)+
-  scale_linetype_discrete(name="Stimuluskategorie")+
-  geom_density()
-p_d_man2 <- ggplot(sim, aes(x=X, linetype=as.factor(stim), color=as.factor(man2)))+
-  scale_color_discrete(name=input$name_man2)+
-  scale_linetype_discrete(name="Stimuluskategorie")+
-  geom_density()
-ggarrange(p_d_man1, p_d_man2, nrow=2)
-p_v_man1 <- ggplot(sim, aes(x=V, linetype=as.factor(stim), color=as.factor(man1)))+
-  scale_color_discrete(name=input$name_man1)+
-  scale_linetype_discrete(name="Stimuluskategorie")+
-  geom_density()
-p_v_man2 <- ggplot(sim, aes(x=V, linetype=as.factor(stim), color=as.factor(man2)))+
-  scale_color_discrete(name=input$name_man2)+
-  scale_linetype_discrete(name="Stimuluskategorie")+
-  geom_density()
-ggarrange(p_v_man1, p_v_man2, nrow=2)
-ggarrange(p_d_man1, p_d_man2,p_v_man1, p_v_man2, layou)
-gridExtra::grid.arrange(p_d_man1, p_v_man1, p_d_man2, p_v_man2, nrow=2)
-# D = eval(parse(text=input$discriminability))
-sim
-
-
-  # gen_plot <- reactive({
-  #   
-  # })
-  
+server <- function(input, output, session) {
   output$pathsplot <- renderPlot({
-    input$recalc
-    # pars1 <- as.character(trimws(unlist(strsplit(input$man1,","))))
-    # func1 <- as.character(trimws(unlist(strsplit(input$funcs1,","))))
-    # funcs1 <- list()
-    # for (i in 1:length(func1)) {
-    #   eval(parse(text = paste('funcs1[[',i,']]', #pars1[i], 
-    #                           ' <- function(x) { return(' , func1[i] , ')}', sep='')))
-    # }
-    # for (i in 1:length(func1)) {
-    #   eval(parse(text = paste('funcs1[[',i,']]', #pars1[i], 
-    #                           ' <- function(x) { return(' , func1[i] , ')}', sep='')))
-    # }
-    # funcs1
-
-    sim <- simulate_observations()
-    {  
-      library(ggplot2)
-      library(ggpubr)
-      layout(matrix(c(1,2,3,4,4,4), nrow=2, byrow=TRUE))
+    require(dplyr)
+    require(tidyr)
+    require(ggplot2)
+    library(ggpubr)
+    
+    require(gridExtra)
+    palette1 = "OrRd"
+    palette2 = "GnBu"
+    {
+      manipulation1 <- as.numeric(trimws(unlist(strsplit(input$manipulation1,","))))
+      manipulation2 <- as.numeric(trimws(unlist(strsplit(input$manipulation2,","))))
+      conditions <- expand.grid(man1 = manipulation1, man2=manipulation2)
       
-      DescX <- sim %>% group_by(stim) %>%
-        summarise(Mean=mean(X), 
-                  SD = sd(X)) %>% 
-        rbind(c(stim=0, Mean=mean(sim$X), SD=sd(sim$X))) %>%
-        mutate(left=Mean-SD, right=Mean+SD) %>% pivot_longer(cols=c("left", "right"))
-      DescV <- sim %>% group_by(stim) %>%
-        summarise(Mean=mean(V), 
-                  SD = sd(V)) %>% 
-        rbind(c(stim=0, Mean=mean(sim$V), SD=sd(sim$V)))%>%
-        mutate(left=Mean-SD, right=Mean+SD) %>% pivot_longer(cols=c("left", "right"))
-      DescConf <- sim %>% group_by(correct) %>%
-        summarise(Mean=mean(conf), 
-                  SD = sd(conf))%>% 
-        rbind(c(correct=0, Mean=mean(sim$conf), SD=sd(sim$conf)))%>%
-        mutate(left=Mean-SD, right=Mean+SD) %>% pivot_longer(cols=c("left", "right"))
+      conditions$d  <- conditions$man1*input$Einfluss_man1_d + 
+        conditions$man2*input$Einfluss_man2_d
+      conditions$v  <- conditions$man1*input$Einfluss_man1_v + 
+        conditions$man2*input$Einfluss_man2_v
+      conditions$sd <- input$sd
+      conditions$sv <- input$sv
+      conditions$w <- input$w
       
-      p_X <- ggplot(sim, aes(x=X, group=stim, color=as.factor(stim)))+
-        geom_density()+
-        geom_density(data=sim, aes(x=X, group=0, color=factor("0")))+
-        scale_color_manual(name = "Stimulus", labels=c("links", "gesamt", "rechts"),
-                           breaks=c(-1, 0, 1), values=c("#FFC20A", "black", "#0C7BDC"))+
-        geom_vline(xintercept = DescX$Mean[c(1,3,5)], color=c("#FFC20A","#0C7BDC", "black"))+
-        geom_line(data=DescX, aes(x=value, y=rep(c(-0.01, 0, 0.01), each=2),color=as.factor(stim)))+
-        ggtitle("Evidenzvariable")+ylab("Dichte")+xlim(c(-5, 5))
-      p_X
-      p_V <- ggplot(sim, aes(x=V, group=stim, color=as.factor(stim)))+
-        geom_density()+
-        geom_density(data=sim, aes(x=V, group=0, color=factor("0")))+
-        scale_color_manual(name = "Stimulus", labels=c("links", "gesamt", "rechts"),
-                           breaks=c(-1, 0, 1), values=c("#FFC20A", "black", "#0C7BDC"))+
-        geom_vline(xintercept = DescV$Mean[c(1,3,5)], color=c("#FFC20A","#0C7BDC", "black"))+
-        geom_line(data=DescV, aes(x=value, y=rep(c(-0.01, 0, 0.01), each=2),color=as.factor(stim)))+
-        ggtitle("Sichtbarkeitsvariable")+ylab("Dichte")+xlim(c(-3, 5))
-      p_V
-      p_Conf <- ggplot(sim, aes(x=conf, color=as.factor(correct), group=correct))+
-        geom_density()+        
-        geom_density(data=sim, aes(x=conf, group=0, color=factor("0")))+
-        scale_color_manual(name = "Richtigkeit", labels=c("falsch", "gesamt", "richtig"),
-                           breaks=c(-1, 0, 1), values=c("darkred", "black", "green3"))+
-        geom_vline(xintercept = DescConf$Mean[c(1,3,5)], color=c("darkred", "green3", "black"))+
-        geom_line(data=DescConf, aes(x=value, y=rep(c(-0.01, 0, 0.01), each=2),color=as.factor(correct)))+
-        ggtitle("Konfidenzvariable")+ylab("Dichte")+xlim(-1.5, 4)
-      p_Conf
-      #grid.arrange(p_X, p_V, p_Conf,nrow=1, )
-                   #layout_matrix=matrix(c(1,2,3,4,4,4), nrow=2, byrow = TRUE))
       
-    }   
-    ggarrange(p_X, p_V, p_Conf,nrow=1, common.legend = TRUE, legend = "bottom")
+      
+      sim <- conditions %>% group_by(man1, man2) %>%
+        reframe(X = rnorm(2*input$n_sim, mean=d/2, input$sd),
+                V = rnorm(2*input$n_sim, v, input$sv)) %>% 
+        mutate(correct = as.numeric(X > 0),
+               conf = (1-input$w)*abs(X) + input$w *V)
+      
+      agg_sim <- sim %>% group_by(man2, man1) %>%
+        summarise(mean_resp=mean(correct),
+                  mean_X = mean(X), 
+                  mean_V = mean(V),.groups = "drop") 
+      # mutate(xfactor = factor(paste(man1,man2,  sep="."), 
+      #                         levels=c(paste(rev(manipulation1), manipulation2, sep="."),
+      #                                  paste(manipulation1, manipulation2, sep="."))))
+      p_d_man <- ggplot(sim, aes(x=X, linetype=as.factor(man2), color=as.factor(man1)))+
+        scale_color_brewer(name=input$name_man1, palette=palette1,
+                           limits=factor(c(-2*min(manipulation1), -min(manipulation1), manipulation1)),
+                           breaks=manipulation1)+
+        scale_linetype_discrete(name=input$name_man2)+
+        geom_vline(xintercept=0, col="black", linewidth=1.2)+
+        geom_density()+ylab("Dichte")+xlab("Evidenz")+
+        geom_vline(data=agg_sim, aes(xintercept=mean_X,linetype=as.factor(man2), color=as.factor(man1) ))+
+        theme_minimal()+xlim(c(-3.2, 7.2))
+  
+      
+      p_v_man <- ggplot(sim, aes(x=V, linetype=as.factor(man2), color=as.factor(man1)))+
+        scale_color_brewer(name=input$name_man1, palette=palette1,
+                           limits=factor(c(-2*min(manipulation1), -min(manipulation1), manipulation1)),
+                           breaks=manipulation1)+
+        scale_linetype_discrete(name=input$name_man2)+
+        geom_density()+ylab("Dichte")+xlab("Sichtbarkeit")+
+        geom_vline(data=agg_sim, aes(xintercept=mean_V,linetype=as.factor(man2), color=as.factor(man1) ))+
+        theme_minimal()+xlim(c(-2.2, 7.2))
+  
+      
+      
+      
+      p_dec_man <- ggplot(agg_sim, aes(x=as.factor(man2), fill=as.factor(man1), y=mean_resp))+
+        scale_fill_brewer(name=input$name_man1, palette=palette1,
+                          limits=factor(c(-2*min(manipulation1), -min(manipulation1), manipulation1)),
+                          breaks=manipulation1)+
+        scale_x_discrete(name=input$name_man2, 
+                         breaks=as.character(manipulation2), labels=as.character(manipulation2))+
+        geom_bar(stat="identity", position=position_dodge())+
+        theme_minimal()+ylim(c(0,1))+
+        ylab("Mittlere Genauigkeit")+ggtitle(paste("Mittlere Genauigkeit nach Manipulationen"))
+  
+      mean_conf <- sim %>% group_by( man1, man2, correct) %>%
+        summarise(mean_conf=mean(conf),
+                  sd_conf = sd(conf),.groups = "drop") 
+      
+  
+      pd = position_dodge(0.1)
+      p_conf_mean1 <- ggplot(mean_conf, aes(x=man2, color=as.factor(man1),
+                                            linetype=factor(correct, levels=c(1,0)), 
+                                            y= mean_conf), group=interaction(man1, correct))+
+        geom_errorbar(aes(ymin=mean_conf-sd_conf, ymax=mean_conf+sd_conf), 
+                      width=(max(manipulation2)-min(manipulation2))/6, position=pd)+
+        scale_color_brewer(name=input$name_man1, palette=palette1,
+                           limits=factor(c(-2*min(manipulation1), -min(manipulation1), manipulation1)),
+                           breaks=manipulation1)+
+        scale_x_continuous(name=input$name_man2, 
+                           breaks=manipulation2, labels=as.character(manipulation2))+
+        scale_linetype_discrete(name="Korrekt", breaks=c(1, 0), labels=c("Richtig", "Falsch"))+
+        geom_line(position = pd, linewidth=1.4)+geom_point(position=pd, size=1.2)+
+        ggtitle(paste("Mittlere Konfidenz nach Manipulationen"))+
+        ylab("Mittlere Konfidenz")+
+        theme_minimal()
+  
+      p_conf_mean2 <- ggplot(mean_conf, aes(x=man1, color=as.factor(man2),
+                                            linetype=factor(correct, levels=c(1,0)), 
+                                            y= mean_conf), group=interaction(man1, correct))+
+        geom_errorbar(aes(ymin=mean_conf-sd_conf, ymax=mean_conf+sd_conf), 
+                      width=(max(manipulation1)-min(manipulation1))/6, position=pd)+
+        scale_color_brewer(name=input$name_man2, palette=palette2, 
+                           limits=factor(c(-min(manipulation2), -2*min(manipulation2), manipulation2)),
+                           breaks=manipulation2)+
+        scale_x_continuous(name=input$name_man1, 
+                           breaks=manipulation1, labels=as.character(manipulation1))+
+        scale_linetype_discrete(name="Korrekt", breaks=c(1, 0), labels=c("Richtig", "Falsch"))+
+        geom_line(position = pd, linewidth=1.4)+geom_point(position=pd, size=1.2)+
+        ggtitle(paste("Mittlere Konfidenz nach Manipulationen"))+
+        ylab("Mittlere Konfidenz")+
+        theme_minimal()
+  
+      # ggarrange(plotlist= list(p_d_man1, p_v_man1,p_dec_man1, p_conf_man1, p_conf_mean), 
+      #           nrow=2, widths = c(0.3, 0.4, 0.3))
+      temp_p <- ggarrange(p_d_man, p_v_man, nrow=2, common.legend = TRUE, legend="right")
+      # temp_p2 <- ggarrange(p_dec_man, p_conf_mean1, nrow=1, common.legend=TRUE, legend="bottom")
+      # temp_p2  
+    }    
+    gridExtra::grid.arrange(p_dec_man, temp_p, p_conf_mean1,p_conf_mean2,
+                            # layout_matrix=matrix(c(1,1,2,2,2,2,3,3,3,4,4,4, 3, 3,3,4,4,4), nrow=6))
+                            layout_matrix=matrix(c(1,1,2,2,2,2,3,3,3,4,4,4), nrow=6))
   })
 }
 
