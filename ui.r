@@ -12,9 +12,9 @@ ui <- fixedPage(
     ),
     column(3,
            tags$h4("."),
-           sliderInput("w", "Gewicht auf Sichtbarkeit für Konfidenz (w):", min = 0, max = 3, value = 0.5, step =0.05, width=NULL),
+           sliderInput("w", "Gewicht auf Sichtbarkeit für Konfidenz (w):", min = 0, max = 1, value = 0.5, step =0.05, width=NULL),
            sliderInput("sd", "Varianz der Evidenz (s_e):", min = 0.1, max = 3, value = 1, step = 0.1, width=NULL),
-           sliderInput("sv", "Varianz der Sichtbarkeit (s_v):", min = 0.1, max = 5.0, value = 1.0, step = 0.1, width=NULL)
+           sliderInput("sv", "Varianz der Sichtbarkeit (s_v):", min = 0.1, max = 3, value = 1.0, step = 0.1, width=NULL)
     ),
     column(3,
            tags$h4("Achsen-Grenzen:"),
