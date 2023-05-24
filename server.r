@@ -1,9 +1,9 @@
-# paramNames <- c("z", "sz", "a", "v", "sv", "tau",
-#                 "delta_t", "input$n_sim", "max_rt")
-# input <- list(z=0.5, sz=0, sv=0.1, v=0.5, a=1.5, delta_t=0.05, max_rt=10, n_sim=100, 
-#               tau=1, s=1)
-#input <- list(c=0.2, sv=1, v=1.5, d=1, sd=1, w=0.5, n_sim=500)
-# 
+
+input <- list(c=0.02, d=1, v=2, sd=1,  sv=1,w=0.5, n_sim=500,
+               plot_maxX= 5,
+              plot_minV=-1, plot_maxV= 5,
+              plot_minConf=-1, plot_maxConf= 4)
+
 server <- function(input, output, session) {
   
   simulate_observations <- reactive({
@@ -33,6 +33,7 @@ server <- function(input, output, session) {
     {  
       library(ggplot2)
       library(ggpubr)
+      library(gridExtra)
       layout(matrix(c(1,2,3,4,4,4), nrow=2, byrow=TRUE))
       
       DescX <- sim %>% group_by(stim) %>%
@@ -58,7 +59,8 @@ server <- function(input, output, session) {
                            breaks=c(-1, 0, 1), values=c("#FFC20A", "black", "#0C7BDC"))+
         geom_vline(xintercept = DescX$Mean[c(1,3,5)], color=c("#FFC20A","#0C7BDC", "black"))+
         geom_line(data=DescX, aes(x=value, y=rep(c(-0.01, 0, 0.01), each=2),color=as.factor(stim)))+
-        ggtitle("Evidenzvariable")+ylab("Dichte")+xlim(c(-5, 5))
+        theme_minimal()+xlim(c(-input$plot_maxX, input$plot_maxX))+
+        ggtitle("Evidenzvariable")+ylab("Dichte")
       p_X
       p_V <- ggplot(sim, aes(x=V, group=stim, color=as.factor(stim)))+
         geom_density()+
@@ -67,7 +69,8 @@ server <- function(input, output, session) {
                            breaks=c(-1, 0, 1), values=c("#FFC20A", "black", "#0C7BDC"))+
         geom_vline(xintercept = DescV$Mean[c(1,3,5)], color=c("#FFC20A","#0C7BDC", "black"))+
         geom_line(data=DescV, aes(x=value, y=rep(c(-0.01, 0, 0.01), each=2),color=as.factor(stim)))+
-        ggtitle("Sichtbarkeitsvariable")+ylab("Dichte")+xlim(c(-3, 5))
+        theme_minimal()+xlim(c(input$plot_minV, input$plot_maxV))+
+        ggtitle("Sichtbarkeitsvariable")+ylab("Dichte")
       p_V
       p_Conf <- ggplot(sim, aes(x=conf, color=as.factor(correct), group=correct))+
         geom_density()+        
@@ -76,13 +79,16 @@ server <- function(input, output, session) {
                            breaks=c(-1, 0, 1), values=c("darkred", "black", "green3"))+
         geom_vline(xintercept = DescConf$Mean[c(1,3,5)], color=c("darkred", "green3", "black"))+
         geom_line(data=DescConf, aes(x=value, y=rep(c(-0.01, 0, 0.01), each=2),color=as.factor(correct)))+
-        ggtitle("Konfidenzvariable")+ylab("Dichte")+xlim(-1.5, 4)
+        ggtitle("Konfidenzvariable")+ylab("Dichte")+
+        theme_minimal()+xlim(c(input$plot_minConf, input$plot_maxConf))+
+        theme(legend.position = "bottom")
       p_Conf
       #grid.arrange(p_X, p_V, p_Conf,nrow=1, )
                    #layout_matrix=matrix(c(1,2,3,4,4,4), nrow=2, byrow = TRUE))
       
     }   
-    ggarrange(p_X, p_V, p_Conf,nrow=1, common.legend = TRUE, legend = "bottom")
+    temp_p <- ggarrange(p_X, p_V,nrow=1, common.legend = TRUE, legend = "bottom")
+    gridExtra::grid.arrange(temp_p, p_Conf, nrow=1)
   })
 }
 
