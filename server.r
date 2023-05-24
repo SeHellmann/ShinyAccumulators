@@ -32,6 +32,7 @@ server <- function(input, output, session) {
       require(tidyr)
       require(ggplot2)
       require(gridExtra)
+      palette1 = "OrRd"
       #list2env(input, envir = environment())
       manipulation1 <- as.numeric(trimws(unlist(strsplit(input$manipulation1,","))))
       conditions <- expand.grid(man1 = manipulation1)
@@ -62,31 +63,35 @@ server <- function(input, output, session) {
                                          paste(manipulation1, 1, sep="."))))
 
       p_d_man1 <- ggplot(sim, aes(x=X, linetype=as.factor(stim), color=as.factor(man1)))+
-        scale_color_discrete(name=input$name_man1)+
+        scale_color_brewer(name=input$name_man1, palette=palette1,
+                           limits = factor(c("a", "b", manipulation1)), breaks=manipulation1)+
         scale_linetype_discrete(name="Stimuluskategorie")+
         geom_vline(xintercept=input$c, col="black", linewidth=1.2)+
         geom_density()+ylab("Dichte")+xlab("Evidenz")+
         geom_vline(data=agg_sim, aes(xintercept=mean_X,linetype=factor(stim), color=as.factor(man1) ))+
         theme_minimal()+xlim(c(-5.2, 5.2))
       p_v_man1 <- ggplot(sim, aes(x=V, linetype=as.factor(stim), color=as.factor(man1)))+
-        scale_color_discrete(name=input$name_man1)+
+        scale_color_brewer(name=input$name_man1, palette=palette1,
+                           limits = factor(c("a", "b", manipulation1)), breaks=manipulation1)+
         scale_linetype_discrete(name="Stimuluskategorie")+
         geom_density()+ylab("Dichte")+xlab("Sichtbarkeit")+
         geom_vline(data=agg_sim, aes(xintercept=mean_V,linetype=factor(stim), color=as.factor(man1) ))+
         theme_minimal()+xlim(c(-3.2, 5.2))
       
       p_dec_man1 <- ggplot(agg_sim, aes(x=xfactor, fill=as.factor(man1), y=mean_resp))+
-        scale_fill_discrete(name=input$name_man1)+
+        scale_fill_brewer(name=input$name_man1, palette=palette1,
+                           limits = factor(c("a", "b", manipulation1)), breaks=manipulation1)+
         scale_x_discrete(name="Stimuluskategorie", breaks=paste(round(length(input$manipulation1)/2), c("-1", "1"), sep="."),
                          labels=c("-1",  "1"))+
         geom_bar(stat="identity", position=position_dodge())+
-        theme_minimal()+
+        theme_minimal()+ylim(c(-1,1))+
         ylab("Mittlere Antwort")+ggtitle(paste("Mittlere Antwort in Abhängigkeit von Stimulus und", input$name_man1))
 
       mean_conf <- sim %>% group_by( man1, correct) %>%
         summarise(mean_conf=mean(conf), .groups = "drop") 
       p_conf_man1 <- ggplot(sim, aes(x=conf, linetype=factor(correct, levels=c(1,0)), color=as.factor(man1)))+
-        scale_color_discrete(name=input$name_man1)+
+        scale_color_brewer(name=input$name_man1, palette=palette1,
+                           limits = factor(c("a", "b", manipulation1)), breaks=manipulation1)+
         scale_linetype_discrete(name="Korrekt", breaks=c(1, 0), labels=c("Richtig", "Falsch"))+
         geom_density()+ggtitle("Verteilung der Konfidenzvariable")+ylab("Dichte")+
         geom_vline(data=mean_conf, aes(xintercept=mean_conf,linetype=factor(correct, levels=c(1,0)), color=as.factor(man1) ))+
