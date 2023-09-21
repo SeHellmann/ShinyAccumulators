@@ -1,0 +1,10 @@
+name: shinyaccumulators
+title:
+username: sehellmann
+account: sehellmann
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 9898609
+bundleId: 7697540
+url: https://sehellmann.shinyapps.io/shinyaccumulators/
+version: 1

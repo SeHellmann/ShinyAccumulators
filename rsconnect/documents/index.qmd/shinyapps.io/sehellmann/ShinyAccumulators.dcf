@@ -1,0 +1,15 @@
+name: ShinyAccumulators
+title: ShinyAccumulators
+username: sehellmann
+account: sehellmann
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 9900666
+bundleId: 7698340
+url: https://sehellmann.shinyapps.io/ShinyAccumulators/
+version: 1
+quarto_version: 1.3.353
+quarto_engines: knitr
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: Anleitung.R|index.html|README.md|ui_customSidepanel.r|ui_FluidExpra.r|ui_FluidPage.r|ui_Sidepanelr.R|useshinyio.R|index_files
