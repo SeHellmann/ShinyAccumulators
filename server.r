@@ -227,5 +227,16 @@ server <- function(input, output, session) {
          cex=1, cex.axis=1, cex.lab=1, line=0) # c(0, "z-sz/2", "z", "z+sz/2","a")
     
   })
+  
+  
+  output$resultstable <- renderTable({
+    results <- round(matrix(c(simus$resp_prob1, simus$resp_prob2,
+                        simus$MRT1, simus$MRT2, 
+                        mean(simus$Conf1), mean(simus$Conf2), 
+                        cor(simus$DT1, simus$Conf1), cor(simus$DT2, simus$Conf2)), byrow=TRUE, ncol=2), 2)
+    rownames(results) <- c("Response probability", "Mean accumulation time", "Mean confidence", "Correlation of accumulation\ntime with confidence")
+    colnames(results) <- c("Upper", "Lower")
+    results
+  }, rownames = TRUE)#, align=c("l", "c", "c"))
 }
 
