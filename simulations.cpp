@@ -84,7 +84,7 @@ NumericVector simulatepaths(NumericVector params, double delta, double maxrt, in
     // compute confidence variable
     out(2*(poststeps+steps+1)+3 , i) = x0;
     out(2*(poststeps+steps+1)+4 , i) = vis;
-    out(2*(poststeps+steps+1)+5 , i) = (w*out(2*(poststeps+steps) + 1 , i)*(x0 - a*zr) + (1-w)*vis)/pow(K*delta+tau, lambda);
+    out(2*(poststeps+steps+1)+5 , i) = (w*out(2*(poststeps+steps+1) + 1 , i)*(x0 - a*zr) + (1-w)*vis)/pow(K*delta+tau, lambda);
     
     if (i % 200 ==0 ) Rcpp::checkUserInterrupt();
   }
